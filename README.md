@@ -21,7 +21,7 @@ npm install
 
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey).
 2. Create an API key.
-3. Copy the API key to your local `.env` file as VITE_GEMINI_API_KEY=<apikey>
+3. Copy the API key to your local `.env` file as `VITE_GEMINI_API_KEY=<apikey>`
 
 ### Start the Development Server
 
