@@ -14,14 +14,15 @@ import { hardcodedTranscript } from "../utils/transcript";
 const ConceptsDisplay = forwardRef((props, ref) => {
   const [concepts, setConcepts] = useState([]);
   const [sortMode, setSortMode] = useState("time");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [newConcepts, setNewConcepts] = useState([]);
   const feedRef = useRef(null);
   const initialLoadComplete = useRef(false);
 
   const sortedConcepts = useMemo(() => {
-    let sortableConcepts = [...concepts];
+    let sortableConcepts = [...newConcepts, ...concepts];
+    
 
     sortableConcepts.forEach((concept, index) => {
       if (!concept.id) {
@@ -31,6 +32,8 @@ const ConceptsDisplay = forwardRef((props, ref) => {
 
     // Sorting based on selected mode
     if (sortMode === "importance") {
+      console.log('importance!!')
+      console.log(sortableConcepts)
       return sortableConcepts.sort((a, b) => {
         // First, compare importance
         const importanceComparison = (b.importance || 0) - (a.importance || 0);
@@ -44,28 +47,16 @@ const ConceptsDisplay = forwardRef((props, ref) => {
       });
     }
 
-    return sortableConcepts.sort((a, b) => (b.id || 0) - (a.id || 0));
-  }, [concepts, sortMode]);
+    return [...sortableConcepts].sort((a, b) => (b.id || 0) - (a.id || 0));
+  }, [concepts, newConcepts, sortMode]);
 
-  useEffect(() => {
-    async function loadConcepts() {
-      try {
-        setLoading(true);
-        const geminiConcepts = await identifyKeyCSConcepts(hardcodedTranscript);
-        const mappedConcepts = await processConcepts(geminiConcepts);
-
-        setConcepts(mappedConcepts);
-        initialLoadComplete.current = true;
-      } catch (err) {
-        console.error("Error loading concepts:", err);
-        setError("Failed to load concepts. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadConcepts();
-  }, []);
+   // Expose this method to parent via useImperativeHandle
+  useImperativeHandle(ref, () => ({
+  addConcept(newConcept) {
+    setNewConcepts((prevConcepts) => [newConcept, ...prevConcepts]);
+    // setConcepts((prevConcepts) => [newConcept, ...prevConcepts]);
+  },
+  }));
 
   const changeSortMode = (mode) => {
     setSortMode(mode);

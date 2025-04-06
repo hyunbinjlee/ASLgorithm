@@ -40,13 +40,13 @@ async function mapConceptsToAtlas(geminiConcepts) {
 
       // Add ASL references if there's a match in Atlas
       if (atlasMatch) {
-        console.log('theres a match!')
+        // console.log('theres a match!')
         conceptObject.asl_image_link =
           atlasDictionary[atlasMatch].asl_image_link;
-        conceptObject.asl_gif_link = atlasDictionary[atlasMatch].asl_gif_link;
+        conceptObject.asl_vid_link = atlasDictionary[atlasMatch].asl_vid_link;
         conceptObject.diagram_image_link =
           atlasDictionary[atlasMatch].diagram_image_link;
-          console.log('conceptObject is: ' + conceptObject)
+          // console.log('conceptObject is: ' + conceptObject)
       }
 
       formattedConcepts.push(conceptObject);
@@ -74,7 +74,7 @@ async function mapConceptsToAtlas(geminiConcepts) {
 async function fetchAtlasDictionary() {
   try {
 
-    console.log('trying to fetch atlas dictionary');
+    // console.log('trying to fetch atlas dictionary');
 
     const dbResponse = await fetch('http://localhost:3000/dbGet', {
       method: 'GET',
@@ -84,7 +84,7 @@ async function fetchAtlasDictionary() {
       throw new Error('error with db fetch from express')
     }
     const dbData = await dbResponse.json();
-    console.log(dbData[0])
+    // console.log(dbData[0])
     return dbData[0];
 
     // Simulating a database call to Atlas - replace with actual MongoDB query
@@ -194,7 +194,7 @@ function createNormalizedMapping(atlasDictionary) {
 
   for (const term of Object.keys(atlasDictionary)) {
     const normalizedTerm = normalizeString(term);
-    console.log('normalizedTerm: ' + normalizedTerm)
+    // console.log('normalizedTerm: ' + normalizedTerm)
     normalizedMap[normalizedTerm] = term;
 
     // Add common variations

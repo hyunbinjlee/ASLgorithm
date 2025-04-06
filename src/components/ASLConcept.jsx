@@ -25,6 +25,8 @@ const conceptGifs = {
 const defaultGif =
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbm13bXpldWNpcHNudTJ0M3dkZ3drenozeTZ0ZHEyc205MGE1eDMyZSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/26tn33aiTi1jkl6H6/giphy.gif"; // Generic code/algorithm visualization
 
+
+const defaultImg = "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 // Predefined logo colors
 const logoColors = [
   "bg-teal-600",
@@ -38,6 +40,9 @@ const logoColors = [
 const ASLConcept = ({ concept, index = 0, isNew = false }) => {
   // IMPORTANT: Always declare hooks at the top level, before any conditional returns
   const [isFavorited, setIsFavorited] = useState(false);
+
+  console.log('my new concept: ')
+  console.log(concept)
 
   // Fail quietly if data is missing but don't break the app
   if (!concept || !concept.term) {
@@ -73,9 +78,11 @@ const ASLConcept = ({ concept, index = 0, isNew = false }) => {
       : "bg-emerald-500";
 
   // Get a GIF for this concept, or use default
-  const gifUrl = concept.term
-    ? conceptGifs[concept.term.toLowerCase()] || defaultGif
+  const vidUrl = concept.term
+    ? concept.asl_vid_link|| defaultGif
     : defaultGif;
+
+  const imgUrl = concept.diagram_image_link || defaultImg;
 
   // Animation classes for new concepts with longer fade-in
   const animationClass = isNew ? "animate-slide-in-from-top opacity-0" : "";
@@ -157,10 +164,10 @@ const ASLConcept = ({ concept, index = 0, isNew = false }) => {
           </div>
         </div>
 
-        {/* GIF Visualization Column */}
+        {/* VID Visualization Column */}
         <div className="bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center h-24">
           <img
-            src={gifUrl}
+            src={imgUrl}
             alt={`Visualization for ${concept.term}`}
             className="w-full h-full object-cover"
           />

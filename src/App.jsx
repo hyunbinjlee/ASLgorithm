@@ -16,7 +16,9 @@ function App() {
 
   // Handle adding a new concept from the control panel
   const handleNewConcept = (newConcept) => {
+    console.log('hit handle new concept!')
     if (conceptsDisplayRef.current) {
+      console.log('adding new concept: ' + newConcept)
       // Convert format from ControlPanel to ConceptsDisplay expected format
       const formattedConcept = {
         ...newConcept,
