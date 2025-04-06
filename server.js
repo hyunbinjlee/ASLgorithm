@@ -1,62 +1,126 @@
-import express from "express";
-import multer from "multer";
-import cors from "cors";
-import path from "path";
-import fs from "fs";
-import Storage from 'google-cloud/storage'
-// const {Storage} = require('@google-cloud/storage');
+import express from 'express';
+import multer from 'multer';
+import { fileURLToPath } from 'url';  
+import path from 'path';
+import {Storage}  from '@google-cloud/storage';
+import {v1, SpeechClient} from '@google-cloud/speech';
+import fs from 'fs';
 
-
-const BUCKET_NAME= 'aslgorithm-testbucket';
-const DISTINATION_FILE = 'destfile.mp3'
+// const {Speech} = pkg
 const app = express();
-const PORT = 3000;
+const upload = multer({ dest: 'uploads/' });
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+const enums = v1.enums;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Create uploads directory if it doesn't exist
-// const uploadDir = path.join(__dirname, "uploads");
-// if (!fs.existsSync(uploadDir)) {
-//   fs.mkdirSync(uploadDir, { recursive: true });
-// }
+// Google Cloud Storage configuration
+const storage = new Storage({
+  keyFilename: './test-chirp-455919-b947a0ef0bfd.json', // Path to your service account key JSON file
+});
+const bucket = storage.bucket('aslgorithm-testbucket'); 
+const transcriptClient = new SpeechClient({
+  keyFilename: './test-chirp-455919-b947a0ef0bfd.json', // Path to your service account key JSON file
+});
 
-/**
- * TODO(developer): Uncomment the following lines before running the sample.
- */
-// The ID of your GCS bucket
-// const bucketName = 'your-unique-bucket-name';
+// app.get('/', (req, res) => {
 
-// The path to your file to upload
-// const filePath = 'path/to/your/file';
+//   console.log('hello');
+// });
 
-// The new ID for your GCS file
-// const destFileName = 'your-new-file-name';
+// Route to handle file upload and eventual transcript
+app.post('/upload', upload.single('file'), async (req, res) => {
+  try {
 
-// Imports the Google Cloud client library
+    console.log('my request file ' + req.file.originalname);
+    console.log('my express director' + __dirname);
 
-// Creates a client
-const storage = new Storage();
+    const filePath = path.join(__dirname, req.file.path);
 
-async function uploadFile(filePath) {
-  const options = {
-    destination: DISTINATION_FILE,
-    // Optional:
-    // Set a generation-match precondition to avoid potential race conditions
-    // and data corruptions. The request to upload is aborted if the object's
-    // generation number does not match your precondition. For a destination
-    // object that does not yet exist, set the ifGenerationMatch precondition to 0
-    // If the destination object already exists in your bucket, set instead a
-    // generation-match precondition using its generation number.
-    // preconditionOpts: {ifGenerationMatch: generationMatchPrecondition},
-  };
+    // currently, save every file as same file name
+    const gcsFile = bucket.file('tempfile.mp3');
 
-  await storage.bucket(BUCKET_NAME).upload(filePath, options);
-  console.log(`${filePath} uploaded to ${BUCKET_NAME}`);
-}
+    // Upload the file to Google Cloud Storage
+    await gcsFile.save(fs.readFileSync(filePath), {
+      contentType: 'audio/mp3',
+    });
 
-uploadFile().catch(console.error);
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+    // Optionally, you can delete the file from the server after upload
+    // fs.unlinkSync(filePath);
+
+    // res.status(200).send('File uploaded successfully');
+  
+    // call speech to texttranscript api
+
+    const gcsUri = 'gs://aslgorithm-testbucket/tempfile.mp3';
+    // const gcsUri = 'gs://cloud-samples-data/speech/brooklyn_bridge.raw';
+
+    // The audio file's encoding, sample rate in hertz, and BCP-47 language code
+    const audio = {
+      uri: gcsUri,
+    };
+    const config = {
+      encoding: 'MP3',
+      sampleRateHertz: 16000,
+      languageCode: 'en-US',
+      enableSpeakerDiarization: true,
+      enableWordTimeOffsets: true,
+    };
+
+    const transcript_req = {
+      audio: audio,
+      config: config,
+    };
+    console.log('attempting to transcribe')
+    // Detects speech in the audio file
+    const [operation] = await transcriptClient.longRunningRecognize(transcript_req);
+    console.log('performed operation, trying to resolve operation')
+    const [response] = await operation.promise();
+    console.log('received response')
+
+    let transcriptArray = []
+
+    response.results.forEach(result => {
+      console.log(`Transcription: ${result.alternatives[0].transcript}`);
+      result.alternatives[0].words.forEach(wordInfo => {
+        // NOTE: If you have a time offset exceeding 2^32 seconds, use the
+        // wordInfo.{x}Time.seconds.high to calculate seconds.
+        const startSecs =
+          `${wordInfo.startTime.seconds}` +
+          '.' +
+          wordInfo.startTime.nanos / 100000000;
+
+        transcriptArray.push(`${startSecs} - ${wordInfo.word}`)
+      });
+    });
+    console.log("bug 1")
+    // transcript has time stamp, word the new line
+
+    const transcript = transcriptArray.join(`\n`)
+    console.log(transcript)
+    console.log("bug 2")
+    res.status(200).send(transcript);
+
+
+    // // write transcript file syncronously to utils folder
+    // fs.writeFile('./src/utils/transcript.txt', transcript, (err) => {
+    //   if (err) {
+    //     console.log("issue!!!");
+    //     throw Error("issue writing file to utils folder");
+    //   }
+    //   else {
+    //     console.log("saved file successfully");
+    //   }
+    // });
+
+  } catch (error) {
+    console.error('Error uploading or transcribing filefile:', error);
+    res.status(500).send('Failed to upload or transcribing file');
+  }
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
 });

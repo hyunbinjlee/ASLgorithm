@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import AudioPlayer from "./AudioPlayer";
+import { identifyKeyCSConcepts } from "../utils/filter.js";
 
 // Demo concepts to showcase the real-time animation
 const demoConcepts = [
@@ -40,6 +41,9 @@ const ControlPanel = ({
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
+    console.log('my selected file is: ' + selectedFile.name)
+    // console.log('my selected file path is: ' + selectedFile.path)
+
     setFile(selectedFile);
     setError(null);
 
@@ -57,24 +61,64 @@ const ControlPanel = ({
     }
   };
 
-  const handleProcess = async () => {
+  const handleProcess = async (event) => {
+
+    if (event) event.preventDefault();
+
     if (!file && !isGenerating) {
       // For demo purposes, we'll proceed even without a file
       console.log("Running demo mode without file");
     }
 
+    console.log('handling this file: ' + file.name)
+
+    // add file to form data to push
+    const formData = new FormData();
+    formData.append('file', file);
     setIsProcessing(true);
     setError(null);
 
     try {
       // Simulate processing time
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      setIsProcessing(false);
+      // push the file using formdata with POST to express serer
+      const response  = await fetch('/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
-      // Start simulating real-time concept detection
-      setIsGenerating(true);
-      simulateConceptDetection();
+      if (!response.ok) {
+        throw new Error('issue with uploading file, response not ok')
+      }
+
+      else {
+        if (response.status != 200) {
+          console.log('other issue with file upload')
+          setIsProcessing(false);
+        }
+
+        else {
+          console.log('successful upload')
+          // alert('successful upload')
+
+          const sentTranscript = await response.text();
+
+          console.log(sentTranscript);
+          
+          
+          //Start simulating real-time concept detection
+          setIsGenerating(true);
+          setIsProcessing(false);
+          simulateConceptDetection();
+
+          // trying to retrieve from gemini now
+          const concepts = identifyKeyCSConcepts(sentTranscript);
+          console.log('concepts from gemini filter:');
+          console.log(concepts);
+        }
+
+      }
     } catch (err) {
       console.error("Error processing file:", err);
       setError(`Error processing file: ${err.message}`);
@@ -103,6 +147,7 @@ const ControlPanel = ({
   // Simulate detecting concepts in real-time from the audio
   const simulateConceptDetection = () => {
     // Sample CS concepts to be "detected" over time
+    console.log("client bug 1")
     const conceptsToDetect = [
       {
         term: "stack",
@@ -145,6 +190,7 @@ const ControlPanel = ({
       }, concept.timestamp * 200); // Speed up for demo (200ms instead of 1000ms)
     });
 
+    console.log("client bug 2")
     // Stop generating after the last concept
     const lastTimestamp =
       conceptsToDetect[conceptsToDetect.length - 1].timestamp;

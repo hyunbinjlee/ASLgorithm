@@ -9,6 +9,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
  */
 async function identifyKeyCSConcepts(transcript) {
   try {
+
     const prompt = `
     I have a computer science lecture transcript. Please identify the key CS concepts mentioned 
     in the transcript, focusing on data structures, algorithms, and programming concepts.

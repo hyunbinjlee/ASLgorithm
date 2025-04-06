@@ -4,13 +4,13 @@ import App from "./App.jsx";
 import "./index.css";
 
 import { identifyKeyCSConcepts } from "./utils/filter.js";
-import { hardcodedTranscript } from "./utils/transcript.js";
+// import { hardcodedTranscript } from "./utils/transcript.js";
 
 async function testTranscriptProcessing() {
   console.log("Starting transcript processing...");
 
   try {
-    const concepts = await identifyKeyCSConcepts(hardcodedTranscript);
+    const concepts = await identifyKeyCSConcepts();
     console.log("Identified CS concepts:");
     console.log(JSON.stringify(concepts, null, 2));
   } catch (error) {
@@ -19,7 +19,7 @@ async function testTranscriptProcessing() {
 }
 
 // Run the test - this will execute when this file is loaded
-testTranscriptProcessing();
+// testTranscriptProcessing();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
