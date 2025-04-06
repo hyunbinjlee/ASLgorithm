@@ -1,81 +1,94 @@
-import React, { useState, useEffect, useRef } from "react";
-import ASLFeed from "./components/ASLFeed";
-import Header from "./components/Header";
+import React, { useRef, useState } from "react";
+import ConceptsDisplay from "./components/ConceptsDisplay";
 import ControlPanel from "./components/ControlPanel";
+import AudioPlayer from "./components/AudioPlayer";
 
 function App() {
+  // Create a ref for the ConceptsDisplay component
+  const conceptsDisplayRef = useRef(null);
+
+  // State for audio handling
   const [file, setFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [recognizedConcepts, setRecognizedConcepts] = useState([
-    // Include one example concept so we can see it works
-    {
-      id: "example-concept",
-      term: "recursion",
-      timestamp: 34,
-      formattedTime: "0:34",
-      description:
-        "A method where the solution to a problem depends on solutions to smaller instances of the same problem.",
-    },
-  ]);
   const [error, setError] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
-  const feedRef = useRef(null);
 
-  // Function to handle new concept detection
-  const handleNewConcept = (concept) => {
-    setRecognizedConcepts((prev) => [concept, ...prev]);
+  // Handle adding a new concept from the control panel
+  const handleNewConcept = (newConcept) => {
+    if (conceptsDisplayRef.current) {
+      // Convert format from ControlPanel to ConceptsDisplay expected format
+      const formattedConcept = {
+        ...newConcept,
+        term: newConcept.term,
+        formattedTime:
+          newConcept.formattedTime || formatTime(newConcept.timestamp || 0),
+        importance: Math.floor(Math.random() * 4) + 6, // Random importance between 6-9
+        definition:
+          newConcept.description ||
+          newConcept.definition ||
+          "No definition available",
+      };
+
+      // Call the addConcept method
+      conceptsDisplayRef.current.addConcept(formattedConcept);
+    }
   };
 
-  // Auto-scroll to the top when new concepts are added
-  useEffect(() => {
-    if (feedRef.current) {
-      feedRef.current.scrollTop = 0;
+  // Format seconds to mm:ss
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+  };
+
+  // For the "Add Demo Concept" button in App.jsx
+  const handleAddDemoConcept = () => {
+    if (conceptsDisplayRef.current) {
+      conceptsDisplayRef.current.addDemoConcept();
     }
-  }, [recognizedConcepts.length]);
+  };
 
   return (
-    <div className="min-h-screen bg-stone-100 text-teal-900">
-      <div className="max-w-3xl mx-auto px-4 py-4 font-sans">
-        <Header />
+    <div className="min-h-screen bg-stone-100 text-gray-900">
+      <header className="bg-white shadow-sm p-4">
+        <div className="max-w-4xl mx-auto flex items-center">
+          <h1 className="text-2xl font-bold text-teal-800">ASLgorithm</h1>
+          <span className="ml-4 text-teal-600 text-sm">
+            CS Lecture Analysis
+          </span>
+        </div>
+      </header>
 
-        {/* CS Concepts Feed - Main focus */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-teal-800">
-              Concepts
-              {isGenerating && (
-                <span className="ml-2 relative inline-flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-                </span>
-              )}
-            </h2>
-            <span className="text-teal-600">View all &gt;</span>
-          </div>
-
-          <div
-            ref={feedRef}
-            className="h-[500px] overflow-y-auto rounded-lg bg-white shadow-sm border border-gray-200 p-4"
-          >
-            {recognizedConcepts.length > 0 ? (
-              <ASLFeed concepts={recognizedConcepts} />
-            ) : (
-              <div className="h-full flex items-center justify-center text-teal-400">
-                {isProcessing ? (
-                  <p>Analyzing lecture content...</p>
-                ) : (
-                  <p>
-                    No CS concepts detected yet. Upload and analyze a lecture to
-                    begin.
-                  </p>
-                )}
-              </div>
-            )}
+      <main className="max-w-4xl mx-auto p-4 space-y-8">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search concepts..."
+            className="w-full py-3 px-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
           </div>
         </div>
 
-        {/* Control Panel at bottom */}
+        {/* Concepts Display with ref */}
+        <ConceptsDisplay ref={conceptsDisplayRef} />
+
+        {/* Control Panel */}
         <ControlPanel
           file={file}
           setFile={setFile}
@@ -89,7 +102,7 @@ function App() {
           setAudioUrl={setAudioUrl}
           onNewConcept={handleNewConcept}
         />
-      </div>
+      </main>
     </div>
   );
 }
