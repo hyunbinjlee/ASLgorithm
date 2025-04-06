@@ -5,7 +5,7 @@ import "./index.css";
 
 import { identifyKeyCSConcepts } from "./utils/filter.js";
 import { hardcodedTranscript } from "./utils/transcript.js";
-import { processConcepts, testAtlasMapping } from "./utils/atlas.js"; // Import from atlas.js
+import { processConcepts, testAtlasMapping } from "./utils/atlas.js";
 
 // Test both pipeline steps
 async function testFullPipeline() {
@@ -30,28 +30,11 @@ async function testFullPipeline() {
   }
 }
 
-// Test just the Atlas mapping with sample data
-async function testAtlasOnly() {
-  console.log("Testing Atlas mapping with sample data...");
-
-  try {
-    const mappedConcepts = await testAtlasMapping();
-    console.log("Atlas mapping test results:");
-    console.log(JSON.stringify(mappedConcepts, null, 2));
-
-    return mappedConcepts;
-  } catch (error) {
-    console.error("Atlas mapping test failed:", error);
-  }
-}
-
 // Expose test functions to the window for console testing
 window.testFullPipeline = testFullPipeline;
-window.testAtlasOnly = testAtlasOnly;
 
 // If you want to run tests automatically on page load, uncomment one of these:
-// testFullPipeline();
-testAtlasOnly();
+testFullPipeline();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

@@ -141,8 +141,8 @@ const ASLConcept = ({ concept, index = 0, isNew = false }) => {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 p-4">
-        {/* Left column: ASL Sign + Logo */}
+      <div className="grid grid-cols-4 gap-4 p-4">
+        {/* ASL Sign Column */}
         <div className="bg-gray-50 rounded-lg p-3">
           <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
             ASL SIGN
@@ -157,7 +157,7 @@ const ASLConcept = ({ concept, index = 0, isNew = false }) => {
           </div>
         </div>
 
-        {/* Middle column: GIF visualization */}
+        {/* GIF Visualization Column */}
         <div className="bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center h-24">
           <img
             src={gifUrl}
@@ -166,7 +166,7 @@ const ASLConcept = ({ concept, index = 0, isNew = false }) => {
           />
         </div>
 
-        {/* Right column: Definition and importance */}
+        {/* Definition Column */}
         <div className="bg-gray-50 rounded-lg p-3">
           <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
             DEFINITION
@@ -186,6 +186,18 @@ const ASLConcept = ({ concept, index = 0, isNew = false }) => {
             <span className="text-xs font-medium text-gray-600">
               {importance}/10
             </span>
+          </div>
+        </div>
+
+        {/* Timestamp Column */}
+        <div className="bg-gray-50 rounded-lg p-3">
+          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+            TIMESTAMP
+          </h4>
+          <div className="text-center">
+            <p className="text-2xl font-semibold text-teal-800">
+              {concept.formattedTime}
+            </p>
           </div>
         </div>
       </div>
