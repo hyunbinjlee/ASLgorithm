@@ -15,24 +15,6 @@ function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
-  
-  // Handle adding a new concept from the control panel
-  const handleNewConcept = (newConcept) => {
-    console.log('hit handle new concept!')
-    if (conceptsDisplayRef.current) {
-      console.log('adding new concept: ' + newConcept)
-      // Convert format from ControlPanel to ConceptsDisplay expected format
-      const formattedConcept = {
-        ...newConcept,
-        term: newConcept.term,
-        formattedTime:
-          newConcept.formattedTime || formatTime(newConcept.timestamp || 0),
-        importance: Math.floor(Math.random() * 4) + 6, // Random importance between 6-9
-        definition:
-          newConcept.description ||
-          newConcept.definition ||
-          "No definition available",
-      };
 
   // Process concepts through the pipeline and send to ConceptsDisplay
   const processAndAddConcept = async (transcript) => {
@@ -79,10 +61,26 @@ function App() {
     }
   };
 
-  // Handle new concepts from file upload
+  // Handle adding a new concept from the control panel
   const handleNewConcept = (newConcept) => {
+    console.log("hit handle new concept!");
     if (conceptsDisplayRef.current) {
-      conceptsDisplayRef.current.addConcept(newConcept);
+      console.log("adding new concept: " + newConcept);
+      // Convert format from ControlPanel to ConceptsDisplay expected format
+      const formattedConcept = {
+        ...newConcept,
+        term: newConcept.term,
+        formattedTime:
+          newConcept.formattedTime || formatTime(newConcept.timestamp || 0),
+        importance: Math.floor(Math.random() * 4) + 6, // Random importance between 6-9
+        definition:
+          newConcept.description ||
+          newConcept.definition ||
+          "No definition available",
+      };
+
+      // Call the addConcept method
+      conceptsDisplayRef.current.addConcept(formattedConcept);
     }
   };
 
