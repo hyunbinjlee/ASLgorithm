@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import AudioPlayer from "./AudioPlayer";
 import { identifyKeyCSConcepts } from "../utils/filter.js";
+import { processConcepts } from "../utils/atlas.js";
 
 const ControlPanel = ({
   file,
@@ -91,6 +92,14 @@ const ControlPanel = ({
           const concepts = await identifyKeyCSConcepts(sentTranscript);
           console.log('concepts from gemini filter:');
           console.log(concepts);
+
+          const mappedConcepts = await processConcepts(concepts);
+          console.log('mapped concepts looking at atlas data')
+          console.log(JSON.stringify(mappedConcepts, null, 2));
+          setIsGenerating(false);
+          
+          // this should populate new concepts into the concepts display component from parrent app
+          mappedConcepts.forEach((concept) => {onNewConcept(concept)});
         }
 
       }
