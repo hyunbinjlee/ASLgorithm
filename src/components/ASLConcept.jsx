@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 // Map of more professional CS-related GIFs for different concepts
 const conceptGifs = {
@@ -17,47 +17,68 @@ const conceptGifs = {
   tree: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjR4Z3hsczR6MXR0Z29tMWFnb3ZvZXF1N29jYW9va2E5MWZnY3VxcyZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/l3vR4VfkD4D7SUTOM/giphy.gif", // Tree visualization
   sorting:
     "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHd0YTU0N2dxamFncjc5dWlvdGc3Mng3ZXcxbDlvYmdqZXF1MXlucSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/XH9VpICwYyQ2HpLkVm/giphy.gif", // Sorting algorithm visualization
+  "binary tree":
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjR4Z3hsczR6MXR0Z29tMWFnb3ZvZXF1N29jYW9va2E5MWZnY3VxcyZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/l3vR4VfkD4D7SUTOM/giphy.gif", // Binary tree visualization
 };
 
 // Default CS visualization GIF for concepts without a specific one
 const defaultGif =
   "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbm13bXpldWNpcHNudTJ0M3dkZ3drenozeTZ0ZHEyc205MGE1eDMyZSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/26tn33aiTi1jkl6H6/giphy.gif"; // Generic code/algorithm visualization
 
-// Generate consistent colors based on the concept name
-const getConceptColor = (concept) => {
-  const colors = [
-    "bg-teal-600",
-    "bg-blue-600",
-    "bg-green-600",
-    "bg-purple-600",
-    "bg-orange-500",
-    "bg-red-600",
-  ];
+// Predefined logo colors
+const logoColors = [
+  "bg-teal-600",
+  "bg-teal-700",
+  "bg-teal-500",
+  "bg-teal-800",
+  "bg-teal-500",
+  "bg-teal-600",
+];
 
-  // Use the first character of the concept to pick a color
-  const index = concept.term.charCodeAt(0) % colors.length;
-  return colors[index];
-};
-
-const ASLConcept = ({ concept }) => {
-  const [isVisible, setIsVisible] = useState(false);
+const ASLConcept = ({ concept, index = 0, isNew = false }) => {
+  // IMPORTANT: Always declare hooks at the top level, before any conditional returns
   const [isFavorited, setIsFavorited] = useState(false);
 
+  // Fail quietly if data is missing but don't break the app
+  if (!concept || !concept.term) {
+    console.warn("ASLConcept received invalid concept data");
+    return null;
+  }
+
+  // Get a color based on the concept term
+  const getLogoColor = () => {
+    const charCode = concept.term.charCodeAt(0);
+    const colorIndex = charCode % logoColors.length;
+    return logoColors[colorIndex];
+  };
+
+  // Calculate colors only after validation
+  const logoColor = getLogoColor();
+
+  // Calculate importance-based styles with fallbacks for missing data
+  const importance = concept.importance || 5; // Default to middle importance if missing
+
+  const importanceColor =
+    importance >= 8
+      ? "bg-red-50 border-red-200 text-red-800"
+      : importance >= 5
+      ? "bg-amber-50 border-amber-200 text-amber-800"
+      : "bg-emerald-50 border-emerald-200 text-emerald-800";
+
+  const importanceBarColor =
+    importance >= 8
+      ? "bg-red-500"
+      : importance >= 5
+      ? "bg-amber-500"
+      : "bg-emerald-500";
+
   // Get a GIF for this concept, or use default
-  const gifUrl = conceptGifs[concept.term.toLowerCase()] || defaultGif;
+  const gifUrl = concept.term
+    ? conceptGifs[concept.term.toLowerCase()] || defaultGif
+    : defaultGif;
 
-  // Get the background color for the concept logo
-  const logoColor = getConceptColor(concept);
-
-  // Animation to ease in the component when it appears
-  useEffect(() => {
-    // Small delay before showing to allow for animation setup
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, []);
+  // Animation classes for new concepts with longer fade-in
+  const animationClass = isNew ? "animate-slide-in-from-top opacity-0" : "";
 
   const toggleFavorite = () => {
     setIsFavorited(!isFavorited);
@@ -65,19 +86,29 @@ const ASLConcept = ({ concept }) => {
 
   return (
     <div
-      className={`bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 mb-4 transition-all duration-500 ease-out ${
-        isVisible
-          ? "opacity-100 transform-none"
-          : "opacity-0 transform -translate-y-4"
-      }`}
+      className={`bg-white rounded-lg shadow-sm border border-gray-100 mb-4 transition-all duration-1500 ${animationClass}`}
+      style={{
+        animationDelay: `${index * 1.5 + 1.5}s`, // Add extra base delay
+        animationFillMode: "forwards",
+        animationDuration: "3s", // Longer animation duration
+      }}
     >
       <div className="flex items-center px-3 py-2 bg-gray-50 border-b border-gray-100">
         <span className="text-gray-500 font-medium text-sm mr-2">
-          {concept.formattedTime}
+          {concept.formattedTime || "N/A"}
         </span>
         <h3 className="text-lg font-semibold text-teal-800">
           "{concept.term}"
         </h3>
+        <div
+          className={`ml-3 px-2 py-0.5 rounded-full text-xs font-medium ${importanceColor}`}
+        >
+          {importance >= 8
+            ? "Key concept"
+            : importance >= 5
+            ? "Important"
+            : "Relevant"}
+        </div>
         <button
           className="ml-auto text-gray-400 hover:text-yellow-500 transition-colors"
           onClick={toggleFavorite}
@@ -110,8 +141,8 @@ const ASLConcept = ({ concept }) => {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 p-3">
-        {/* ASL Sign Language Column */}
+      <div className="grid grid-cols-4 gap-4 p-4">
+        {/* ASL Sign Column */}
         <div className="bg-gray-50 rounded-lg p-3">
           <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
             ASL SIGN
@@ -126,13 +157,36 @@ const ASLConcept = ({ concept }) => {
           </div>
         </div>
 
-        {/* GIF Column */}
+        {/* GIF Visualization Column */}
         <div className="bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center h-24">
           <img
             src={gifUrl}
-            alt={`ASL sign for ${concept.term}`}
+            alt={`Visualization for ${concept.term}`}
             className="w-full h-full object-cover"
           />
+        </div>
+
+        {/* Definition Column */}
+        <div className="bg-gray-50 rounded-lg p-3">
+          <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+            DEFINITION
+          </h4>
+          <p className="text-sm text-gray-700 mb-2">
+            {concept.definition || "No definition available"}
+          </p>
+
+          <div className="mt-2 flex items-center space-x-2">
+            <span className="text-xs text-gray-500">Importance:</span>
+            <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full ${importanceBarColor}`}
+                style={{ width: `${importance * 10}%` }}
+              ></div>
+            </div>
+            <span className="text-xs font-medium text-gray-600">
+              {importance}/10
+            </span>
+          </div>
         </div>
 
         {/* Timestamp Column */}
@@ -144,12 +198,6 @@ const ASLConcept = ({ concept }) => {
             <p className="text-2xl font-semibold text-teal-800">
               {concept.formattedTime}
             </p>
-            <button
-              className="mt-1 text-xs text-teal-600 hover:text-teal-800 transition-colors"
-              onClick={toggleFavorite}
-            >
-              {isFavorited ? "Favorited" : "Add to favorites"}
-            </button>
           </div>
         </div>
       </div>
