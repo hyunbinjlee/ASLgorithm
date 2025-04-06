@@ -40,11 +40,13 @@ async function mapConceptsToAtlas(geminiConcepts) {
 
       // Add ASL references if there's a match in Atlas
       if (atlasMatch) {
+        console.log('theres a match!')
         conceptObject.asl_image_link =
           atlasDictionary[atlasMatch].asl_image_link;
         conceptObject.asl_gif_link = atlasDictionary[atlasMatch].asl_gif_link;
         conceptObject.diagram_image_link =
           atlasDictionary[atlasMatch].diagram_image_link;
+          console.log('conceptObject is: ' + conceptObject)
       }
 
       formattedConcepts.push(conceptObject);
@@ -71,99 +73,113 @@ async function mapConceptsToAtlas(geminiConcepts) {
  */
 async function fetchAtlasDictionary() {
   try {
+
+    console.log('trying to fetch atlas dictionary');
+
+    const dbResponse = await fetch('http://localhost:3000/dbGet', {
+      method: 'GET',
+    });
+
+    if (!dbResponse.ok) {
+      throw new Error('error with db fetch from express')
+    }
+    const dbData = await dbResponse.json();
+    console.log(dbData[0])
+    return dbData[0];
+
     // Simulating a database call to Atlas - replace with actual MongoDB query
-    return {
-      Array: {
-        definition:
-          "A collection of elements stored at contiguous memory locations, identified by indices.",
-        diagram_image_link:
-          "https://en.wikipedia.org/wiki/Unified_Modeling_Language#/media/File:UML_diagram.png",
-        asl_image_link:
-          "https://en.wikipedia.org/wiki/American_Sign_Language#/media/File:American_Sign_Language.png",
-        asl_gif_link:
-          "https://en.wikipedia.org/wiki/GIF#/media/File:Rotating_earth_(large).gif",
-      },
-      "Linked List": {
-        definition:
-          "A linear data structure where elements are stored in nodes that point to the next node.",
-        diagram_image_link:
-          "https://en.wikipedia.org/wiki/Unified_Modeling_Language#/media/File:UML_diagram.png",
-        asl_image_link:
-          "https://en.wikipedia.org/wiki/American_Sign_Language#/media/File:American_Sign_Language.png",
-        asl_gif_link:
-          "https://en.wikipedia.org/wiki/GIF#/media/File:Rotating_earth_(large).gif",
-      },
-      Stack: {
-        definition:
-          "A linear data structure that follows the Last In First Out (LIFO) principle.",
-        diagram_image_link: "https://example.com/stack-diagram.png",
-        asl_image_link: "https://example.com/stack-asl.png",
-        asl_gif_link: "https://example.com/stack-asl.gif",
-      },
-      Queue: {
-        definition:
-          "A linear data structure that follows the First In First Out (FIFO) principle.",
-        diagram_image_link: "https://example.com/queue-diagram.png",
-        asl_image_link: "https://example.com/queue-asl.png",
-        asl_gif_link: "https://example.com/queue-asl.gif",
-      },
-      "Binary Tree": {
-        definition:
-          "A tree data structure in which each node has at most two children.",
-        diagram_image_link: "https://example.com/binary-tree-diagram.png",
-        asl_image_link: "https://example.com/binary-tree-asl.png",
-        asl_gif_link: "https://example.com/binary-tree-asl.gif",
-      },
-      "Binary Search Tree": {
-        definition:
-          "A binary tree with the property that for each node, all elements in the left subtree are less than the node, and all elements in the right subtree are greater.",
-        diagram_image_link: "https://example.com/bst-diagram.png",
-        asl_image_link: "https://example.com/bst-asl.png",
-        asl_gif_link: "https://example.com/bst-asl.gif",
-      },
-      Graph: {
-        definition:
-          "A non-linear data structure consisting of vertices and edges connecting these vertices.",
-        diagram_image_link: "https://example.com/graph-diagram.png",
-        asl_image_link: "https://example.com/graph-asl.png",
-        asl_gif_link: "https://example.com/graph-asl.gif",
-      },
-      "Breadth-First Search": {
-        definition:
-          "A graph traversal algorithm that explores all neighbors at the present depth before moving to vertices at the next depth level.",
-        diagram_image_link: "https://example.com/bfs-diagram.png",
-        asl_image_link: "https://example.com/bfs-asl.png",
-        asl_gif_link: "https://example.com/bfs-asl.gif",
-      },
-      "Depth-First Search": {
-        definition:
-          "A graph traversal algorithm that explores as far as possible along each branch before backtracking.",
-        diagram_image_link: "https://example.com/dfs-diagram.png",
-        asl_image_link: "https://example.com/dfs-asl.png",
-        asl_gif_link: "https://example.com/dfs-asl.gif",
-      },
-      Recursion: {
-        definition:
-          "A method where the solution to a problem depends on solutions to smaller instances of the same problem.",
-        diagram_image_link: "https://example.com/recursion-diagram.png",
-        asl_image_link: "https://example.com/recursion-asl.png",
-        asl_gif_link: "https://example.com/recursion-asl.gif",
-      },
-      Tree: {
-        definition:
-          "A hierarchical data structure with a root node and branches.",
-        diagram_image_link: "https://example.com/tree-diagram.png",
-        asl_image_link: "https://example.com/tree-asl.png",
-        asl_gif_link: "https://example.com/tree-asl.gif",
-      },
-      "Spanning Tree": {
-        definition:
-          "A subgraph that includes all the vertices of the original graph and is a tree.",
-        diagram_image_link: "https://example.com/spanning-tree-diagram.png",
-        asl_image_link: "https://example.com/spanning-tree-asl.png",
-        asl_gif_link: "https://example.com/spanning-tree-asl.gif",
-      },
-    };
+    // return {
+    //   Array: {
+    //     definition:
+    //       "A collection of elements stored at contiguous memory locations, identified by indices.",
+    //     diagram_image_link:
+    //       "https://en.wikipedia.org/wiki/Unified_Modeling_Language#/media/File:UML_diagram.png",
+    //     asl_image_link:
+    //       "https://en.wikipedia.org/wiki/American_Sign_Language#/media/File:American_Sign_Language.png",
+    //     asl_gif_link:
+    //       "https://en.wikipedia.org/wiki/GIF#/media/File:Rotating_earth_(large).gif",
+    //   },
+    //   "Linked List": {
+    //     definition:
+    //       "A linear data structure where elements are stored in nodes that point to the next node.",
+    //     diagram_image_link:
+    //       "https://en.wikipedia.org/wiki/Unified_Modeling_Language#/media/File:UML_diagram.png",
+    //     asl_image_link:
+    //       "https://en.wikipedia.org/wiki/American_Sign_Language#/media/File:American_Sign_Language.png",
+    //     asl_gif_link:
+    //       "https://en.wikipedia.org/wiki/GIF#/media/File:Rotating_earth_(large).gif",
+    //   },
+    //   Stack: {
+    //     definition:
+    //       "A linear data structure that follows the Last In First Out (LIFO) principle.",
+    //     diagram_image_link: "https://example.com/stack-diagram.png",
+    //     asl_image_link: "https://example.com/stack-asl.png",
+    //     asl_gif_link: "https://example.com/stack-asl.gif",
+    //   },
+    //   Queue: {
+    //     definition:
+    //       "A linear data structure that follows the First In First Out (FIFO) principle.",
+    //     diagram_image_link: "https://example.com/queue-diagram.png",
+    //     asl_image_link: "https://example.com/queue-asl.png",
+    //     asl_gif_link: "https://example.com/queue-asl.gif",
+    //   },
+    //   "Binary Tree": {
+    //     definition:
+    //       "A tree data structure in which each node has at most two children.",
+    //     diagram_image_link: "https://example.com/binary-tree-diagram.png",
+    //     asl_image_link: "https://example.com/binary-tree-asl.png",
+    //     asl_gif_link: "https://example.com/binary-tree-asl.gif",
+    //   },
+    //   "Binary Search Tree": {
+    //     definition:
+    //       "A binary tree with the property that for each node, all elements in the left subtree are less than the node, and all elements in the right subtree are greater.",
+    //     diagram_image_link: "https://example.com/bst-diagram.png",
+    //     asl_image_link: "https://example.com/bst-asl.png",
+    //     asl_gif_link: "https://example.com/bst-asl.gif",
+    //   },
+    //   Graph: {
+    //     definition:
+    //       "A non-linear data structure consisting of vertices and edges connecting these vertices.",
+    //     diagram_image_link: "https://example.com/graph-diagram.png",
+    //     asl_image_link: "https://example.com/graph-asl.png",
+    //     asl_gif_link: "https://example.com/graph-asl.gif",
+    //   },
+    //   "Breadth-First Search": {
+    //     definition:
+    //       "A graph traversal algorithm that explores all neighbors at the present depth before moving to vertices at the next depth level.",
+    //     diagram_image_link: "https://example.com/bfs-diagram.png",
+    //     asl_image_link: "https://example.com/bfs-asl.png",
+    //     asl_gif_link: "https://example.com/bfs-asl.gif",
+    //   },
+    //   "Depth-First Search": {
+    //     definition:
+    //       "A graph traversal algorithm that explores as far as possible along each branch before backtracking.",
+    //     diagram_image_link: "https://example.com/dfs-diagram.png",
+    //     asl_image_link: "https://example.com/dfs-asl.png",
+    //     asl_gif_link: "https://example.com/dfs-asl.gif",
+    //   },
+    //   Recursion: {
+    //     definition:
+    //       "A method where the solution to a problem depends on solutions to smaller instances of the same problem.",
+    //     diagram_image_link: "https://example.com/recursion-diagram.png",
+    //     asl_image_link: "https://example.com/recursion-asl.png",
+    //     asl_gif_link: "https://example.com/recursion-asl.gif",
+    //   },
+    //   Tree: {
+    //     definition:
+    //       "A hierarchical data structure with a root node and branches.",
+    //     diagram_image_link: "https://example.com/tree-diagram.png",
+    //     asl_image_link: "https://example.com/tree-asl.png",
+    //     asl_gif_link: "https://example.com/tree-asl.gif",
+    //   },
+    //   "Spanning Tree": {
+    //     definition:
+    //       "A subgraph that includes all the vertices of the original graph and is a tree.",
+    //     diagram_image_link: "https://example.com/spanning-tree-diagram.png",
+    //     asl_image_link: "https://example.com/spanning-tree-asl.png",
+    //     asl_gif_link: "https://example.com/spanning-tree-asl.gif",
+    //   },
+    // };
   } catch (error) {
     console.error("Error fetching Atlas dictionary:", error);
     throw error;
@@ -178,6 +194,7 @@ function createNormalizedMapping(atlasDictionary) {
 
   for (const term of Object.keys(atlasDictionary)) {
     const normalizedTerm = normalizeString(term);
+    console.log('normalizedTerm: ' + normalizedTerm)
     normalizedMap[normalizedTerm] = term;
 
     // Add common variations

@@ -4,6 +4,11 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import {Storage}  from '@google-cloud/storage';
 import {v1, SpeechClient} from '@google-cloud/speech';
+import { Db, MongoClient } from "mongodb";
+import cors from 'cors';
+
+const DB_URI = 'mongodb+srv://admin:ASLgorithmPass@aslgorithm.omfm586.mongodb.net/'
+const PORT = 5050
 import fs from 'fs';
 
 // const {Speech} = pkg
@@ -24,7 +29,7 @@ const transcriptClient = new SpeechClient({
 });
 
 // app.get('/', (req, res) => {
-
+app.use(cors());
 //   console.log('hello');
 // });
 
@@ -102,22 +107,35 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     console.log("bug 2")
     res.status(200).send(transcript);
 
-
-    // // write transcript file syncronously to utils folder
-    // fs.writeFile('./src/utils/transcript.txt', transcript, (err) => {
-    //   if (err) {
-    //     console.log("issue!!!");
-    //     throw Error("issue writing file to utils folder");
-    //   }
-    //   else {
-    //     console.log("saved file successfully");
-    //   }
-    // });
-
   } catch (error) {
     console.error('Error uploading or transcribing filefile:', error);
     res.status(500).send('Failed to upload or transcribing file');
   }
+});
+
+
+app.get('/dbGet', async (req, res) => {
+    console.log('fetching from database')
+    try {    
+      const client = new MongoClient(DB_URI);
+
+      let conn = await client.connect();
+    
+      let db = conn.db("dsa");
+      // for now we are hard coding looking at dsa collections. a collection is similar to a table
+      let dsaCollection = await db.collection("dsa-collections");
+      let results = await dsaCollection.find({}, { projection: {_id:0} })
+      .limit(50)
+      .toArray();
+      
+      console.log('result from mongoDB call');
+      console.log(results);
+      res.status(200).send(results);
+    }
+    catch (error) {
+      console.error('issue fetching from mongodb: ', error)
+      res.status(500).send('Failed to upload or transcribing file');
+    }
 });
 
 // Start the server
